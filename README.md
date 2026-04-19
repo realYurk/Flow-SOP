@@ -21,6 +21,8 @@
 **Flow SOP** 是一个面向工程师的行动导向型本地知识库。它将工作台逻辑化：通过编写 Mermaid 流程图，自动驱动底层对应的动作卡片。执行完毕一步，确认一步，实现复杂操作的闭环追踪。
 <img width="1798" height="1123" alt="image" src="https://github.com/user-attachments/assets/0e97d369-71da-4d1a-bbf6-f366d905a4b8" />
 
+<img width="1798" height="1123" alt="image" src="https://github.com/user-attachments/assets/0f36568e-e669-4a6e-a52d-da991871d671" />
+
 <img width="1798" height="1123" alt="image" src="https://github.com/user-attachments/assets/63cd3125-adb2-4b36-ab87-738074136ab3" />
 
 <img width="1798" height="1123" alt="image" src="https://github.com/user-attachments/assets/aba6d4ad-d064-4d59-bffa-4f5957fb6ad7" />
@@ -28,8 +30,6 @@
 <img width="1798" height="1123" alt="image" src="https://github.com/user-attachments/assets/6226fd33-d955-4b6c-b32e-e0e1df9140a2" />
 
 <img width="1798" height="1123" alt="image" src="https://github.com/user-attachments/assets/e0d2e9ae-9b0e-4b69-932c-412bc2092dc5" />
-
-<img width="1798" height="1123" alt="image" src="https://github.com/user-attachments/assets/0f36568e-e669-4a6e-a52d-da991871d671" />
 
 
 
