@@ -1,21 +1,26 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
+// Strip Vue Proxy wrapper — IPC structured clone cannot handle Proxy objects
+function raw(obj) {
+  return JSON.parse(JSON.stringify(obj))
+}
+
 contextBridge.exposeInMainWorld('electronAPI', {
   // Data
   loadData:       ()                => ipcRenderer.invoke('data:load'),
-  saveData:       (d)               => ipcRenderer.invoke('data:save', d),
+  saveData:       (d)               => ipcRenderer.invoke('data:save', raw(d)),
   getDataPath:    ()                => ipcRenderer.invoke('app:get-data-path'),
   openDataDir:    ()                => ipcRenderer.invoke('app:open-data-dir'),
 
-  // Set data dir (renderer picks path via built-in browser, sends string)
-  setDataDir:     (dir, data)       => ipcRenderer.invoke('app:set-data-dir', dir, data),
+  // Change data dir (send plain data so it can be written to new location)
+  setDataDir:     (dir, data)       => ipcRenderer.invoke('app:set-data-dir', dir, raw(data)),
 
-  // Export / import (renderer provides paths)
-  exportData:     (data, destDir)   => ipcRenderer.invoke('data:export', data, destDir),
-  exportSop:      (sop, savePath)   => ipcRenderer.invoke('data:export-sop', sop, savePath),
-  importData:     (filePath)        => ipcRenderer.invoke('data:import', filePath),
+  // Export / import — always strip Proxy before sending
+  exportData:     (data, destDir)   => ipcRenderer.invoke('data:export',     raw(data), destDir),
+  exportSop:      (sop,  savePath)  => ipcRenderer.invoke('data:export-sop', raw(sop),  savePath),
+  importData:     (filePath)        => ipcRenderer.invoke('data:import',      filePath),
 
-  // File system browsing (for in-app path picker)
+  // File system browsing
   fsReaddir:      (p)               => ipcRenderer.invoke('fs:readdir', p),
   fsRoots:        ()                => ipcRenderer.invoke('fs:roots'),
   fsHomedir:      ()                => ipcRenderer.invoke('fs:homedir'),
@@ -28,6 +33,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   close:          ()                => ipcRenderer.invoke('app:close'),
 
   // File watcher
-  onExternalChange:             (cb) => ipcRenderer.on('data:external-change', (_,d) => cb(d)),
+  onExternalChange:             (cb) => ipcRenderer.on('data:external-change', (_, d) => cb(d)),
   removeExternalChangeListener: ()   => ipcRenderer.removeAllListeners('data:external-change'),
 })

@@ -1,101 +1,140 @@
-/**
- * .sop file format handler
- * A .sop file is a ZIP archive containing:
- *   manifest.json     → full data.json (for lossless round-trip)
- *   README.md         → human-readable index
- *   {Col}/{Folder}/{SopTitle}.md  → each SOP as readable markdown
- */
-
 const fs   = require('fs')
 const path = require('path')
-const os   = require('os')
 
-// ── Markdown export of a single SOP ─────────────────────────────────────────
+// ── Sanitize filename ──────────────────────────────────────────────────────
+function safeName(str) {
+  if (!str) return 'untitled'
+  return str
+    .replace(/[/\\?%*:|"<>]/g, '-')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '')
+    .slice(0, 80) || 'untitled'
+}
+
+// ── Export single SOP as Markdown ─────────────────────────────────────────
 function sopToMarkdown(sop) {
   const lines = []
-  lines.push(`# ${sop.title}`)
+
+  lines.push(`# ${sop.title || 'Untitled SOP'}`)
   lines.push('')
 
-  if (sop.mermaidSource) {
+  // Mermaid flow diagram
+  if (sop.mermaidSource && sop.mermaidSource.trim()) {
     lines.push('## 流程图')
     lines.push('')
     lines.push('```mermaid')
-    lines.push(sop.mermaidSource)
+    lines.push(sop.mermaidSource.trim())
     lines.push('```')
     lines.push('')
   }
 
-  if (sop.variables && Object.keys(sop.variables).length) {
+  // Variables
+  if (sop.variables && Object.keys(sop.variables).length > 0) {
     lines.push('## 变量')
     lines.push('')
+    lines.push('| 变量名 | 值 |')
+    lines.push('|--------|-----|')
     for (const [k, v] of Object.entries(sop.variables)) {
-      lines.push(`- \`${k}\` = \`${v}\``)
+      lines.push(`| \`${k}\` | \`${v || '(未设置)'}\` |`)
     }
     lines.push('')
   }
 
-  if (sop.actionCards && sop.actionCards.length) {
+  // Action cards
+  if (sop.actionCards && sop.actionCards.length > 0) {
     lines.push('## 动作卡片')
     lines.push('')
-    for (const card of sop.actionCards) {
-      const check = card.completed ? '[x]' : '[ ]'
-      lines.push(`### ${check} ${card.title}`)
+
+    sop.actionCards.forEach((card, idx) => {
+      const status = card.completed ? '✅' : '⬜'
+      lines.push(`### ${status} Step ${idx + 1}：${card.title || '未命名'}`)
       lines.push('')
-      if (card.code) {
-        lines.push('```' + (card.language || ''))
-        lines.push(card.code)
+
+      // Code block
+      if (card.code && card.code.trim()) {
+        const lang = card.language || ''
+        lines.push('```' + lang)
+        lines.push(card.code.trim())
         lines.push('```')
         lines.push('')
       }
-      if (card.notes) {
-        lines.push(`> 💡 ${card.notes}`)
+
+      // Notes
+      if (card.notes && card.notes.trim()) {
+        lines.push(`> 💡 **注意：** ${card.notes.trim()}`)
         lines.push('')
       }
-    }
+    })
+  } else {
+    lines.push('## 动作卡片')
+    lines.push('')
+    lines.push('*（暂无动作卡片）*')
+    lines.push('')
   }
 
   return lines.join('\n')
 }
 
-// ── Sanitize filename ────────────────────────────────────────────────────────
-function safeName(str) {
-  return str.replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, '_').slice(0, 60)
-}
-
-// ── Export to folder structure (readable markdown files + manifest) ──────────
+// ── Export entire AppData as folder structure ──────────────────────────────
 function exportToFolder(data, destDir) {
-  fs.mkdirSync(destDir, { recursive: true })
+  if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true })
 
-  // Write manifest (full data for lossless import)
+  // 1. Write full manifest (for lossless re-import)
   fs.writeFileSync(
     path.join(destDir, 'manifest.json'),
     JSON.stringify(data, null, 2),
     'utf-8'
   )
 
-  // Write README index
-  const indexLines = ['# Flow SOP — 项目介绍文档', '', '## 目录', '']
-  for (const col of data.collections) {
-    indexLines.push(`### ${col.icon} ${col.name}`)
-    for (const folder of col.folders) {
-      indexLines.push(`- **${folder.name}**`)
-      for (const sop of folder.sopItems) {
+  // 2. Write README index - use relative paths, not hardcoded
+  const indexLines = [
+    '# Flow SOP — 项目介绍文档',
+    '',
+    `> 导出时间：${new Date().toLocaleString('zh-CN')}`,
+    `> 导出目录：${destDir}`,
+    '',
+    '## 目录结构',
+    '',
+  ]
+
+  const collections = data.collections || []
+  for (const col of collections) {
+    indexLines.push(`### ${col.icon || '📁'} ${col.name}`)
+    indexLines.push('')
+    const folders = col.folders || []
+    for (const folder of folders) {
+      indexLines.push(`**${folder.name}**`)
+      indexLines.push('')
+      const items = folder.sopItems || []
+      for (const sop of items) {
         const colDir    = safeName(col.name)
         const folderDir = safeName(folder.name)
         const sopFile   = safeName(sop.title) + '.md'
-        indexLines.push(`  - [${sop.title}](./${colDir}/${folderDir}/${sopFile})`)
+        const cardCount = (sop.actionCards || []).length
+        const doneCount = (sop.actionCards || []).filter(c => c.completed).length
+        indexLines.push(`- [${sop.title}](./${colDir}/${folderDir}/${sopFile}) — ${doneCount}/${cardCount} 步骤完成`)
       }
+      indexLines.push('')
     }
-    indexLines.push('')
   }
-  fs.writeFileSync(path.join(destDir, 'README.md'), indexLines.join('\n'), 'utf-8')
 
-  // Write each SOP as markdown
-  for (const col of data.collections) {
-    for (const folder of col.folders) {
+  indexLines.push('---')
+  indexLines.push('')
+  indexLines.push('使用 `manifest.json` 可在 Flow SOP 应用中完整还原所有数据。')
+
+  fs.writeFileSync(
+    path.join(destDir, 'README.md'),
+    indexLines.join('\n'),
+    'utf-8'
+  )
+
+  // 3. Write each SOP as individual .md file
+  for (const col of collections) {
+    for (const folder of col.folders || []) {
       const dir = path.join(destDir, safeName(col.name), safeName(folder.name))
       fs.mkdirSync(dir, { recursive: true })
-      for (const sop of folder.sopItems) {
+      for (const sop of folder.sopItems || []) {
         const filePath = path.join(dir, safeName(sop.title) + '.md')
         fs.writeFileSync(filePath, sopToMarkdown(sop), 'utf-8')
       }
@@ -103,13 +142,4 @@ function exportToFolder(data, destDir) {
   }
 }
 
-// ── Import from folder (reads manifest.json for lossless restore) ────────────
-function importFromFolder(srcDir) {
-  const manifestPath = path.join(srcDir, 'manifest.json')
-  if (fs.existsSync(manifestPath)) {
-    return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
-  }
-  throw new Error('未找到 manifest.json，无法导入')
-}
-
-module.exports = { exportToFolder, importFromFolder, sopToMarkdown }
+module.exports = { exportToFolder, sopToMarkdown, safeName }

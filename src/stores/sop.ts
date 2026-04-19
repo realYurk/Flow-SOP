@@ -4,14 +4,20 @@ import type { AppData, Collection, Folder, SopItem, ActionCard, Toast } from '@/
 
 function uid() { return Math.random().toString(36).slice(2,9) + Date.now().toString(36) }
 
+// CRITICAL: strip Vue Proxy before any IPC call
+// contextBridge structured-clone rejects Proxy objects
+function toRaw<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj))
+}
+
 export const useSopStore = defineStore('sop', () => {
-  const data        = ref<AppData>({ collections: [] })
-  const activeSopId = ref<string | null>(null)
-  const theme       = ref<'dark' | 'light'>('dark')
-  const toasts      = ref<Toast[]>([])
-  const isSaving    = ref(false)
-  const searchQuery = ref('')
-  const dataPath    = ref('')
+  const data         = ref<AppData>({ collections: [] })
+  const activeSopId  = ref<string | null>(null)
+  const theme        = ref<'dark' | 'light'>('light')   // DEFAULT: light
+  const toasts       = ref<Toast[]>([])
+  const isSaving     = ref(false)
+  const searchQuery  = ref('')
+  const dataPath     = ref('')
   const showSettings = ref(false)
 
   const activeSop = computed<SopItem | null>(() => {
@@ -45,33 +51,48 @@ export const useSopStore = defineStore('sop', () => {
 
   async function loadData() {
     if (window.electronAPI) {
-      data.value = await window.electronAPI.loadData()
-      try { dataPath.value = await window.electronAPI.getDataPath() } catch(e) {}
+      try {
+        data.value = await window.electronAPI.loadData()
+        dataPath.value = await window.electronAPI.getDataPath()
+      } catch (e) {
+        console.error('loadData error:', e)
+        data.value = { collections: [] }
+      }
     } else {
       const raw = localStorage.getItem('flowsop-data')
-      if (raw) data.value = JSON.parse(raw)
-      else data.value = { collections: [] }
+      data.value = raw ? JSON.parse(raw) : { collections: [] }
     }
   }
 
   async function saveData() {
     isSaving.value = true
     try {
-      if (window.electronAPI) await window.electronAPI.saveData(data.value)
-      else localStorage.setItem('flowsop-data', JSON.stringify(data.value))
-    } finally { isSaving.value = false }
+      if (window.electronAPI) {
+        // toRaw() strips Vue Proxy - REQUIRED before IPC
+        await window.electronAPI.saveData(toRaw(data.value))
+      } else {
+        localStorage.setItem('flowsop-data', JSON.stringify(data.value))
+      }
+    } catch (e) {
+      console.error('saveData error:', e)
+    } finally {
+      isSaving.value = false
+    }
   }
 
-  function applyExternalData(d: AppData) { data.value = d; toast('文件已变更，已自动刷新', 'info') }
+  function applyExternalData(d: AppData) {
+    data.value = d
+    toast('文件已变更，已自动刷新', 'info')
+  }
 
   function initTheme() {
     const saved = localStorage.getItem('flowsop-theme') as 'dark'|'light'|null
-    theme.value = saved ?? 'dark'
+    theme.value = saved ?? 'light'   // default light
     applyTheme(theme.value)
   }
 
   function applyTheme(t: 'dark'|'light') {
-    document.documentElement.classList.toggle('dark', t === 'dark')
+    document.documentElement.classList.toggle('dark',  t === 'dark')
     document.documentElement.classList.toggle('light', t === 'light')
   }
 
@@ -86,6 +107,8 @@ export const useSopStore = defineStore('sop', () => {
     toasts.value.push({ id, message, type })
     setTimeout(() => { toasts.value = toasts.value.filter(t => t.id !== id) }, 3000)
   }
+
+  function setDataPath(p: string) { dataPath.value = p }
 
   // ── Collections ──────────────────────────────────────────────────────────
   function createCollection(name: string, icon = '📁', color = '#6366f1'): Collection {
@@ -125,15 +148,21 @@ export const useSopStore = defineStore('sop', () => {
   // ── SOP Items ─────────────────────────────────────────────────────────────
   function findSop(id: string): SopItem | undefined {
     for (const col of data.value.collections)
-      for (const folder of col.folders) { const s = folder.sopItems.find(s=>s.id===id); if (s) return s }
+      for (const folder of col.folders) {
+        const s = folder.sopItems.find(s=>s.id===id)
+        if (s) return s
+      }
   }
   function createSopItem(folderId: string, title: string): SopItem {
-    let target: Folder|undefined
-    for (const col of data.value.collections) { target = col.folders.find(f=>f.id===folderId); if (target) break }
+    let target: Folder | undefined
+    for (const col of data.value.collections) {
+      target = col.folders.find(f=>f.id===folderId)
+      if (target) break
+    }
     if (!target) throw new Error('Folder not found')
     const sop: SopItem = {
       id: uid(), title,
-      mermaidSource: 'graph LR\n  A[开始] --> B[步骤一]\n  B --> C[完成]',
+      mermaidSource: 'graph LR\n  A[开始] --> B[步骤]\n  B --> C[完成]',
       variables: {}, actionCards: [], sortOrder: target.sopItems.length, pinnedCardIds: []
     }
     target.sopItems.push(sop); saveData(); return sop
@@ -145,7 +174,11 @@ export const useSopStore = defineStore('sop', () => {
     for (const col of data.value.collections)
       for (const folder of col.folders) {
         const i = folder.sopItems.findIndex(s=>s.id===id)
-        if (i !== -1) { folder.sopItems.splice(i,1); if (activeSopId.value===id) activeSopId.value=null; saveData(); return }
+        if (i !== -1) {
+          folder.sopItems.splice(i, 1)
+          if (activeSopId.value === id) activeSopId.value = null
+          saveData(); return
+        }
       }
   }
 
@@ -153,7 +186,8 @@ export const useSopStore = defineStore('sop', () => {
   function createCard(sopId: string, patch: Partial<ActionCard> = {}): ActionCard {
     const sop = findSop(sopId)!
     const card: ActionCard = {
-      id: uid(), title: patch.title ?? '新卡片', language: patch.language ?? 'bash',
+      id: uid(), title: patch.title ?? '新卡片',
+      language: patch.language ?? 'bash',
       code: patch.code ?? '', notes: patch.notes ?? '',
       completed: false, sortOrder: sop.actionCards.length
     }
@@ -188,16 +222,14 @@ export const useSopStore = defineStore('sop', () => {
     return code.replace(/\{\{(\w+)\}\}/g, (_, k) => variables[k] ?? `{{${k}}}`)
   }
 
-  function setDataPath(p: string) { dataPath.value = p }
-
   return {
     data, activeSopId, activeSop, theme, toasts, isSaving,
     searchQuery, searchResults, completionStats, dataPath, showSettings,
-    loadData, saveData, applyExternalData, initTheme, toggleTheme, toast,
+    loadData, saveData, applyExternalData, initTheme, toggleTheme, toast, setDataPath,
     createCollection, updateCollection, deleteCollection,
     createFolder, renameFolder, deleteFolder,
     findSop, createSopItem, updateSopItem, deleteSopItem,
     createCard, updateCard, toggleCard, deleteCard, togglePinCard,
-    resolveCode, setDataPath,
+    resolveCode,
   }
 })

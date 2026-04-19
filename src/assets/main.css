@@ -6,24 +6,8 @@
   * { box-sizing: border-box; }
   html, body, #app { height: 100%; margin: 0; padding: 0; overflow: hidden; }
 
-  :root {
-    --bg-deep:   #0a0a0f;
-    --bg-base:   #0f0f17;
-    --bg-raised: #16161f;
-    --bg-panel:  #1a1a25;
-    --bg-hover:  #1e1e2e;
-    --bg-active: #22223a;
-    --border-sub:#1e1e2e;
-    --border-def:#2a2a3d;
-    --border-str:#3a3a55;
-    --text-pri:  #e8e8f0;
-    --text-sec:  #8888aa;
-    --text-mut:  #55556a;
-    --text-acc:  #818cf8;
-    --code-bg:   #0d0d14;
-    --code-text: #a8d8a8;
-  }
-  .light {
+  /* Default = light theme (no flash on startup) */
+  :root, .light {
     --bg-deep:   #ebebf3;
     --bg-base:   #f5f5fb;
     --bg-raised: #ffffff;
@@ -39,6 +23,23 @@
     --text-acc:  #4f46e5;
     --code-bg:   #f0f0f8;
     --code-text: #166534;
+  }
+  .dark {
+    --bg-deep:   #0a0a0f;
+    --bg-base:   #0f0f17;
+    --bg-raised: #16161f;
+    --bg-panel:  #1a1a25;
+    --bg-hover:  #1e1e2e;
+    --bg-active: #22223a;
+    --border-sub:#1e1e2e;
+    --border-def:#2a2a3d;
+    --border-str:#3a3a55;
+    --text-pri:  #e8e8f0;
+    --text-sec:  #8888aa;
+    --text-mut:  #55556a;
+    --text-acc:  #818cf8;
+    --code-bg:   #0d0d14;
+    --code-text: #a8d8a8;
   }
 
   body { background: var(--bg-base); color: var(--text-pri); font-family: 'Inter','PingFang SC','Microsoft YaHei',sans-serif; font-size: 13px; }
