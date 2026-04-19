@@ -1,173 +1,57 @@
-# ⚡ Life SOP — Vue 3 + Electron Edition
+<div align="center">
 
-> 行动导向型本地知识库 · Linear 风格 · 深色/浅色双主题
+# Flow SOP
 
----
+**别让你的 SOP 停留在纸面。画出逻辑，即刻执行。**
+*(Don't just document it. Draw it, track it, execute it.)*
 
-## 技术栈
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Vue 3](https://img.shields.io/badge/Vue-3.4-4FC08D.svg?logo=vue.js)](https://vuejs.org/)
+[![Electron](https://img.shields.io/badge/Electron-29.0-47848F.svg?logo=electron)](https://www.electronjs.org/)
+[![Platform](https://img.shields.io/badge/Platform-Win%20%7C%20Mac%20%7C%20Linux-lightgrey.svg)]()
 
-| 层 | 技术 |
-|----|------|
-| UI 框架 | Vue 3 + TypeScript + Composition API |
-| 样式 | Tailwind CSS v3 + 自定义 Design Tokens |
-| 状态管理 | Pinia |
-| 流程图 | Mermaid.js 10（支持 Zoom/Pan、方向切换、节点点击） |
-| 桌面端 | Electron 29 |
-| 持久化 | 本地 JSON 文件 (`~/.lifesop/data.json`) + File Watcher |
-| 打包 | electron-builder |
+[功能特性](#-功能特性) • [快速开始](#-快速开始) • [项目结构](#-项目结构) • [常见问题](#-faq)
+
+</div>
 
 ---
 
-## 快速开始
+## 💡 创作背景
 
-### 前置要求
+传统笔记软件（Notion、Obsidian 等）偏重静态“记录”。在进行系统重构或运维排障时，工程师不仅需要查阅逻辑，更需要一步步执行代码。查阅与执行的割裂，会导致标准操作流程（SOP）难以严格落地。
 
-- Node.js 18+
-- npm 9+
+**Flow SOP** 是一个面向工程师的行动导向型本地知识库。它将工作台逻辑化：通过编写 Mermaid 流程图，自动驱动底层对应的动作卡片。执行完毕一步，确认一步，实现复杂操作的闭环追踪。
 
-### 安装依赖
+## ✨ 核心特性
+
+* **图表驱动执行**：实时渲染 Mermaid（Flowchart/Sequence 等），流程节点与具体执行代码解耦又统一。
+* **动作卡片体系**：集成 Highlight.js 支持 70+ 语言高亮。提供代码一键复制、避坑备注、进度勾选与常用步骤置顶（Pin）功能。
+* **全局变量替换**：支持在 SOP 顶部定义 `{{VAR_NAME}}`（如 DB 凭证、项目名称），所有动作卡片自动映射替换，降低跨环境执行的容错成本。
+* **数据完全本地化**：无任何外部网络请求（除首次拉取 Mermaid CDN）。数据持久化为本地 JSON 文件，支持修改数据目录（配合 OneDrive/iCloud 可实现端到端同步）。
+* **Markdown 无损导出**：支持将整套 SOP 导出为标准 Markdown 目录树，便于归档与 Git 沉淀。
+
+## 🚀 快速开始
+
+### 方式一：下载预编译版本（推荐）
+
+访问 [Releases](../../releases) 页面获取最新版本。
+
+| 平台 | 文件 | 说明 |
+| :--- | :--- | :--- |
+| **Windows x64** | `Flow.SOP.Setup.1.x.x.exe` | 图形化安装向导，自动配置快捷方式 |
+| **macOS** | `Flow.SOP-1.x.x.dmg` | 拖拽至 Applications 即可 |
+| **Linux** | `Flow.SOP-1.x.x.AppImage` | 赋权 `chmod +x` 后直接运行 |
+
+*注：Windows 环境下若触发 SmartScreen 拦截，点击「更多信息」→「仍要运行」即可（因未购买数字签名）。*
+
+### 方式二：本地源码构建
+
+Node.js 推荐版本：18+。
 
 ```bash
+git clone [https://github.com/realYurk/Flow-SOP.git](https://github.com/realYurk/Flow-SOP.git)
+cd Flow-SOP
 npm install
-```
 
-### 开发模式（浏览器）
-
-```bash
-npm run dev
-# 访问 http://localhost:5173
-```
-
-### 开发模式（Electron 桌面）
-
-```bash
+# 启动 Electron 本地开发模式
 npm run electron:dev
-```
-
-### 生产打包
-
-```bash
-npm run electron:build
-# 输出到 dist-electron/
-```
-
----
-
-## 功能特性
-
-### 🗂 三级导航
-- Collection → Folder → SOP
-- 右键菜单：新建 / 重命名 / 删除
-- 搜索框实时过滤 SOP
-
-### 📊 Mermaid 流程图
-- 实时渲染，深色/浅色主题自动适配
-- LR / TD 方向一键切换
-- 鼠标滚轮缩放（Ctrl+滚轮）、拖拽平移
-- 拖拽底边调整面板高度
-- 点击节点跳转对应动作卡片
-
-### 📋 动作卡片流
-- Checkbox 追踪完成状态，顶部进度条
-- 代码块一键复制（支持变量自动替换）
-- 语言标签（bash/java/python/sql/yaml...）
-- 黄色 💡 备注区
-
-### 🏷 变量系统
-- SOP 级变量，代码中 `{{VAR_NAME}}` 自动替换
-- 顶部 Variables Bar 实时编辑
-
-### 🎨 双主题
-- 深色/浅色一键切换，偏好持久化
-- 完整 Design Token 系统
-
-### 💾 本地存储
-- 数据保存在 `~/.lifesop/data.json`
-- File Watcher：手动编辑 JSON 后 UI 自动刷新
-- 支持一键导出/导入 JSON 备份
-
-### 🛠 浮动工具栏
-- 右下角浮动，显示当前 SOP 完成进度
-- 快捷访问：导出、导入、新增卡片、编辑 SOP
-
----
-
-## 数据文件结构
-
-```json
-{
-  "collections": [
-    {
-      "id": "col-1",
-      "name": "VFB Project",
-      "icon": "⚡",
-      "color": "#6366f1",
-      "folders": [
-        {
-          "id": "fol-1",
-          "name": "Auth Module",
-          "sopItems": [
-            {
-              "id": "sop-1",
-              "title": "快速构建 JWT 登录模块",
-              "mermaidSource": "graph LR\n  A --> B",
-              "variables": { "JWT_SECRET": "your-secret" },
-              "actionCards": [
-                {
-                  "id": "card-1",
-                  "title": "Step 1 · 添加依赖",
-                  "language": "xml",
-                  "code": "<dependency>...</dependency>",
-                  "notes": "注意事项",
-                  "completed": false
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-```
-
----
-
-## 目录结构
-
-```
-life-sop-vue/
-├── electron/
-│   ├── main.js          # Electron 主进程
-│   ├── preload.js       # IPC 桥接
-│   └── seed.js          # 默认演示数据
-├── src/
-│   ├── assets/main.css  # Tailwind 入口
-│   ├── components/
-│   │   ├── TitleBar.vue        # 自定义标题栏
-│   │   ├── Sidebar.vue         # 左侧导航
-│   │   ├── CollectionGroup.vue # Collection 折叠组
-│   │   ├── FolderGroup.vue     # Folder + SOP 列表
-│   │   ├── ContextMenu.vue     # 右键菜单
-│   │   ├── WorkspaceView.vue   # 主工作区
-│   │   ├── MermaidPanel.vue    # 流程图面板
-│   │   ├── VariablesBar.vue    # 变量编辑栏
-│   │   ├── ActionCard.vue      # 动作卡片
-│   │   ├── FloatingToolbar.vue # 浮动工具栏
-│   │   ├── ToastStack.vue      # Toast 通知
-│   │   └── modals/
-│   │       ├── EditSopModal.vue
-│   │       ├── EditCardModal.vue
-│   │       └── RenameModal.vue
-│   ├── composables/
-│   │   └── useMermaid.ts       # Mermaid 渲染 hook
-│   ├── stores/
-│   │   └── sop.ts              # Pinia store（全部业务逻辑）
-│   ├── types/index.ts
-│   ├── App.vue
-│   └── main.ts
-├── index.html
-├── package.json
-├── tailwind.config.js
-└── vite.config.ts
-```
