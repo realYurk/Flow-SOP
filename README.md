@@ -36,11 +36,9 @@
 
 | 平台 | 文件 | 说明 |
 | :--- | :--- | :--- |
-| **Windows x64** | `Flow.SOP.Setup.1.x.x.exe` | 图形化安装向导，自动配置快捷方式 |
-| **macOS** | `Flow.SOP-1.x.x.dmg` | 拖拽至 Applications 即可 |
-| **Linux** | `Flow.SOP-1.x.x.AppImage` | 赋权 `chmod +x` 后直接运行 |
+| **Windows x64** | `Flow.SOP.Setup.1.0.0.exe` | 图形化安装向导，自动配置快捷方式 |
 
-*注：Windows 环境下若触发 SmartScreen 拦截，点击「更多信息」→「仍要运行」即可（因未购买数字签名）。*
+*注：Windows 环境下本地构建可使用 npm run electron:dev 作为 Demo 启动*
 
 ### 方式二：本地源码构建
 
