@@ -51,8 +51,7 @@ npm install
 
 # 启动 Electron 本地开发模式
 npm run electron:dev
-
-# Flow SOP — 打包为 Windows 安装程序 (.exe) 指南
+```
 
 ## 打包原理
 
@@ -86,7 +85,7 @@ npm install
 
 # 2. 打包 Windows 安装包
 npm run build:win
-```
+
 
 打包完成后，在 `dist-electron/` 目录生成：
 
@@ -114,34 +113,6 @@ npm run build:linux
 # 所有平台（需要在对应平台上运行，或使用 CI）
 npm run build:all
 ```
-
----
-
-## 安装包特性（NSIS 配置）
-
-已配置的安装程序行为：
-
-- ✅ **非一键安装**：显示安装向导，用户可看到每一步
-- ✅ **可自选安装目录**：默认 `C:\Program Files\Flow SOP`，用户可修改
-- ✅ **创建桌面快捷方式**
-- ✅ **创建开始菜单快捷方式**（`Flow SOP` 文件夹）
-- ✅ **支持卸载**：通过控制面板 → 程序和功能
-- ✅ **中文界面**：安装向导显示中文
-
----
-
-## 添加应用图标
-
-打包时需要 `.ico` 格式图标（Windows）：
-
-1. 准备一张 256×256 或更大的 PNG 图片
-2. 转换为 `.ico`（推荐工具：https://convertio.co/png-ico/）
-3. 将 `icon.ico` 放入 `public/` 目录
-4. `package.json` 中已配置 `"icon": "public/icon.ico"`
-
-如果没有 `.ico` 文件，electron-builder 会使用默认图标，打包不会失败。
-
----
 
 ## 首次下载 Electron 慢怎么办
 
