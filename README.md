@@ -5,7 +5,7 @@
 **别让你的 SOP 停留在纸面。画出逻辑，即刻执行。**
 *(Don't just document it. Draw it, track it, execute it.)*
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Vue 3](https://img.shields.io/badge/Vue-3.4-4FC08D.svg?logo=vue.js)](https://vuejs.org/)
 [![Electron](https://img.shields.io/badge/Electron-29.0-47848F.svg?logo=electron)](https://www.electronjs.org/)
 [![Platform](https://img.shields.io/badge/Platform-Win%20%7C%20Mac%20%7C%20Linux-lightgrey.svg)]()
@@ -55,3 +55,6 @@ npm install
 
 # 启动 Electron 本地开发模式
 npm run electron:dev
+
+## 📄 License
+[Apache License 2.0](./LICENSE) © 2026 realYurk.
