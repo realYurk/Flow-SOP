@@ -1,9 +1,10 @@
-# Life SOP — 打包为 Windows 安装程序 (.exe) 指南
+# Flow SOP — 打包为 Windows 安装程序 (.exe) 指南
 
 ## 打包原理
 
-Life SOP 使用 **electron-builder** 将 Electron 应用打包为可安装的 Windows 程序。
+Flow SOP 使用 **electron-builder** 将 Electron 应用打包为可安装的 Windows 程序。
 打包后生成的安装包：
+
 - 包含所有运行时依赖（Node.js、Electron、Chromium）
 - 用户只需双击 `.exe` 即可安装，无需安装任何环境
 - 安装后在开始菜单和桌面创建快捷方式
@@ -36,8 +37,8 @@ npm run build:win
 打包完成后，在 `dist-electron/` 目录生成：
 ```
 dist-electron/
-├── Life SOP Setup 1.0.0.exe    ← 安装程序（分发给用户）
-├── Life SOP Setup 1.0.0.exe.blockmap
+├── Flow SOP Setup 1.0.0.exe    ← 安装程序（分发给用户）
+├── Flow SOP Setup 1.0.0.exe.blockmap
 └── builder-debug.yml
 ```
 
@@ -65,9 +66,9 @@ npm run build:all
 
 已配置的安装程序行为：
 - ✅ **非一键安装**：显示安装向导，用户可看到每一步
-- ✅ **可自选安装目录**：默认 `C:\Program Files\Life SOP`，用户可修改
+- ✅ **可自选安装目录**：默认 `C:\Program Files\Flow SOP`，用户可修改
 - ✅ **创建桌面快捷方式**
-- ✅ **创建开始菜单快捷方式**（`Life SOP` 文件夹）
+- ✅ **创建开始菜单快捷方式**（`Flow SOP` 文件夹）
 - ✅ **支持卸载**：通过控制面板 → 程序和功能
 - ✅ **中文界面**：安装向导显示中文
 
@@ -83,22 +84,6 @@ npm run build:all
 4. `package.json` 中已配置 `"icon": "public/icon.ico"`
 
 如果没有 `.ico` 文件，electron-builder 会使用默认图标，打包不会失败。
-
----
-
-## 代码签名（发布给他人使用时建议）
-
-不签名的 exe 在 Windows 上会触发 SmartScreen 警告（"Windows 已保护你的电脑"）。
-用户点击"仍要运行"即可正常安装。
-
-如需签名（需购买代码签名证书）：
-```json
-// package.json build 配置中添加：
-"win": {
-  "certificateFile": "path/to/certificate.pfx",
-  "certificatePassword": "your-password"
-}
-```
 
 ---
 
@@ -143,7 +128,7 @@ A: 这是正常的，因为包含了完整的 Chromium 引擎。
 A: `package.json` 中 `backgroundColor: '#0f0f17'` 已设置，可消除白屏。
 
 ### Q: 用户安装后数据存在哪里？
-A: 用户数据存储在 `%USERPROFILE%\.lifesop\data.json`（即 `C:\Users\用户名\.lifesop\`）
+A: 用户数据存储在 `%USERPROFILE%\.Flowsop\data.json`（即 `C:\Users\用户名\.Flowsop\`）
 卸载应用**不会**删除用户数据，需要用户手动删除此目录。
 
 ---
