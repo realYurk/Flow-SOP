@@ -14,9 +14,6 @@
 
 ---
 
-<img width="1214" height="1295" alt="ChatGPT Image 2026年4月23日 20_17_29" src="https://github.com/user-attachments/assets/663a66b5-089f-441e-9e6f-9ff16fa95d94" />
-
-
 ## 💡 创作背景
 
 传统笔记软件（Notion、Obsidian 等）偏重静态“记录”。在进行系统重构或运维排障时，工程师不仅需要查阅逻辑，更需要一步步执行代码。查阅与执行的割裂，会导致标准操作流程（SOP）难以严格落地。
